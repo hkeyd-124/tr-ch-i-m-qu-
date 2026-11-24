@@ -1,0 +1,615 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hộp Quà Bí Ẩn</title>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #101027;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+#gift-app {
+  width: 100%;
+  max-width: 520px;
+  min-height: 650px;
+  padding: 35px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    #34316b 0%,
+    #17152f 55%,
+    #0c1021 100%
+  );
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(#fff 1px, transparent 1.5px),
+    radial-gradient(#b9a8ff 1px, transparent 1.5px);
+  background-size: 53px 61px, 83px 97px;
+  background-position: 5px 9px, 30px 40px;
+  opacity: .35;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #c6b8ff;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-size: 30px;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  margin-top: 12px;
+  color: #c6c0e7;
+}
+
+.gift-stage {
+  height: 270px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.glow {
+  position: absolute;
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+  background: #a58aff22;
+  filter: blur(15px);
+  transition: all .8s;
+}
+
+.gift {
+  position: relative;
+  width: 160px;
+  height: 150px;
+  transform-origin: 50% 85%;
+  filter: drop-shadow(0 18px 20px #0008);
+}
+
+.gift-body {
+  position: absolute;
+  bottom: 0;
+  left: 9px;
+  width: 142px;
+  height: 105px;
+  border-radius: 7px 7px 12px 12px;
+  background: linear-gradient(
+    110deg,
+    #c51e48,
+    #f33d68 48%,
+    #a90e3b
+  );
+  border: 2px solid #ff7895;
+}
+
+.gift-lid {
+  position: absolute;
+  top: 30px;
+  left: 0;
+  width: 160px;
+  height: 37px;
+  border-radius: 7px;
+  background: linear-gradient(
+    110deg,
+    #e52b55,
+    #ff6480,
+    #bf1643
+  );
+  border: 2px solid #ff9aab;
+  z-index: 3;
+  transform-origin: 12px 28px;
+  transition: transform 1s cubic-bezier(.2,.8,.2,1);
+}
+
+.ribbon-v {
+  position: absolute;
+  z-index: 2;
+  left: 67px;
+  bottom: 0;
+  width: 26px;
+  height: 105px;
+  background: linear-gradient(
+    90deg,
+    #ffdc70,
+    #fff0a8,
+    #e6a82e
+  );
+}
+
+.ribbon-h {
+  position: absolute;
+  z-index: 4;
+  top: 30px;
+  left: 0;
+  width: 160px;
+  height: 11px;
+  background: #ffe08a;
+}
+
+.bow {
+  position: absolute;
+  z-index: 5;
+  top: 7px;
+  left: 54px;
+  width: 52px;
+  height: 35px;
+}
+
+.bow:before,
+.bow:after {
+  content: "";
+  position: absolute;
+  width: 29px;
+  height: 24px;
+  border: 7px solid #ffdf83;
+  border-radius: 70% 20% 70% 20%;
+  top: 0;
+}
+
+.bow:before {
+  left: -5px;
+  transform: rotate(20deg);
+}
+
+.bow:after {
+  right: -5px;
+  transform: scaleX(-1) rotate(20deg);
+}
+
+.bow i {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #fff0a8;
+  border-radius: 50%;
+  left: 19px;
+  top: 13px;
+}
+
+.gift.shaking {
+  animation: giftshake .55s infinite;
+}
+
+@keyframes giftshake {
+  0%,100% {
+    transform: rotate(0) translateY(0);
+  }
+  20% {
+    transform: rotate(-5deg) translateY(-3px);
+  }
+  40% {
+    transform: rotate(5deg) translateY(1px);
+  }
+  60% {
+    transform: rotate(-4deg) translateY(-2px);
+  }
+  80% {
+    transform: rotate(4deg);
+  }
+}
+
+.gift.opening {
+  animation: anticipate .6s infinite;
+}
+
+@keyframes anticipate {
+  0%,100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.opened .gift-lid {
+  transform: translate(-20px,-95px) rotate(-32deg);
+}
+
+.opened .glow {
+  background: #ffd97855;
+  width: 290px;
+  height: 290px;
+}
+
+#status {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e6dfff;
+  margin-bottom: 20px;
+}
+
+.open-btn {
+  background: linear-gradient(110deg,#ffcf68,#ff9f43);
+  color: #47220b;
+  font-weight: 900;
+  letter-spacing: 2px;
+  border: none;
+  border-radius: 50px;
+  padding: 16px 48px;
+  box-shadow: 0 5px 25px #ffad4655;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.open-btn:active {
+  transform: scale(.95);
+}
+
+.open-btn:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.result {
+  display: none;
+  margin-top: 28px;
+  animation: resultin .7s cubic-bezier(.2,1.5,.5,1) both;
+}
+
+.result.show {
+  display: block;
+}
+
+@keyframes resultin {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(.6);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.prize-icon {
+  font-size: 60px;
+  margin: 12px 0;
+}
+
+.prize-name {
+  font-size: clamp(27px,7vw,42px);
+  font-weight: 1000;
+  line-height: 1.2;
+  color: #ffe39a;
+  text-shadow: 0 3px 20px #ffc55c55;
+}
+
+.prize-message {
+  font-size: 14px;
+  margin-top: 12px;
+  color: #ded6ff;
+}
+
+.again-btn {
+  margin-top: 25px;
+  color: #c8b9ff;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.footnote {
+  color: #aaa9c9;
+  font-size: 12px;
+  margin-top: 28px;
+}
+
+.confetti {
+  position: absolute;
+  top: -15px;
+  width: 9px;
+  height: 14px;
+  animation: fall 2.7s linear forwards;
+  pointer-events: none;
+}
+
+@keyframes fall {
+  to {
+    transform: translate(var(--drift),620px) rotate(800deg);
+    opacity: 0;
+  }
+}
+
+@media(max-width:480px) {
+  #gift-app {
+    min-height: 100vh;
+    border-radius: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="gift-app">
+  <div class="stars"></div>
+
+  <div class="content">
+
+    <div class="eyebrow">✦ THE MYSTERY BOX ✦</div>
+
+    <h1>HỘP QUÀ BÍ ẨN</h1>
+
+    <div class="subtitle">
+      Một bất ngờ đang chờ bạn bên trong...
+    </div>
+
+    <div class="gift-stage">
+
+      <div class="glow"></div>
+
+      <div class="gift shaking" id="gift">
+
+        <div class="gift-body"></div>
+
+        <div class="ribbon-v"></div>
+
+        <div class="gift-lid"></div>
+
+        <div class="ribbon-h"></div>
+
+        <div class="bow">
+          <i></i>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="status">
+      🎁 Bạn đã sẵn sàng chưa?
+    </div>
+
+    <button class="open-btn" id="openGift">
+      MỞ QUÀ ✨
+    </button>
+
+    <div class="result" id="result">
+
+      <div style="font-size:12px;letter-spacing:2px;font-weight:bold;color:#ffe0a0">
+        ✦ CHÚC MỪNG BẠN NHẬN ĐƯỢC ✦
+      </div>
+
+      <div class="prize-icon" id="prizeIcon"></div>
+
+      <div class="prize-name" id="prizeName"></div>
+
+      <div class="prize-message" id="prizeMessage"></div>
+
+      <button class="again-btn" id="again">
+        ↻ MỞ LẠI HỘP QUÀ
+      </button>
+
+    </div>
+
+    <div class="footnote" id="footnote">
+      Bạn sẽ nhận được một trong những phần quà bất ngờ!
+    </div>
+
+  </div>
+</div>
+
+<script>
+(() => {
+
+  const root = document.getElementById('gift-app');
+
+  const gift = document.getElementById('gift');
+
+  const btn = document.getElementById('openGift');
+
+  const status = document.getElementById('status');
+
+  const result = document.getElementById('result');
+
+  // DANH SÁCH PHẦN THƯỞNG
+  const prizes = [
+
+    {
+      icon: '⭕',
+      name: '1 CÁI NỊT',
+      message: 'Ôi! Một phần quà vô cùng thiết thực! 😂'
+    },
+
+    {
+      icon: '⭐',
+      name: '1 NGÔI SAO',
+      message: 'Bạn chính là ngôi sao may mắn hôm nay! 🌟'
+    },
+
+    {
+      icon: '🍀',
+      name: 'MAY MẮN LẦN SAU',
+      message: 'Đừng buồn nhé! Vận may sẽ đến vào lần tới!'
+    },
+
+    {
+      icon: '📱',
+      name: 'IPHONE 18 PRO MAX',
+      message: 'SIÊU PHẨM! Bạn là người may mắn nhất hôm nay!!! 🎉'
+    }
+
+  ];
+
+  let busy = false;
+
+  // HIỆU ỨNG PHÁO GIẤY
+  function confetti() {
+
+    const colors = [
+      '#ffdb70',
+      '#ff6b91',
+      '#a994ff',
+      '#75e4db',
+      '#fff'
+    ];
+
+    for (let i = 0; i < 75; i++) {
+
+      const el = document.createElement('i');
+
+      el.className = 'confetti';
+
+      el.style.left = Math.random() * 100 + '%';
+
+      el.style.background = colors[i % colors.length];
+
+      el.style.setProperty(
+        '--drift',
+        (Math.random() * 260 - 130) + 'px'
+      );
+
+      el.style.animationDelay =
+        (Math.random() * .9) + 's';
+
+      root.appendChild(el);
+
+      setTimeout(() => el.remove(), 4000);
+    }
+  }
+
+  // MỞ HỘP QUÀ
+  btn.addEventListener('click', () => {
+
+    if (busy) return;
+
+    busy = true;
+
+    btn.disabled = true;
+
+    gift.classList.remove('shaking');
+
+    gift.classList.add('opening');
+
+    status.textContent =
+      '🤔 Hộp quà đang rung lên...';
+
+    const messages = [
+      '✨ Điều bất ngờ đang đến...',
+      '😲 Hình như có thứ gì đó bên trong!',
+      '💓 Hồi hộp quá...',
+      '🎉 Chuẩn bị khám phá nhé!'
+    ];
+
+    let ticks = 0;
+
+    const timer = setInterval(() => {
+
+      status.textContent =
+        messages[Math.min(ticks, messages.length - 1)];
+
+      ticks++;
+
+    }, 650);
+
+    setTimeout(() => {
+
+      clearInterval(timer);
+
+      // CHỌN NGẪU NHIÊN PHẦN THƯỞNG
+      const prize =
+        prizes[Math.floor(Math.random() * prizes.length)];
+
+      // HIỆU ỨNG MỞ NẮP
+      root.classList.add('opened');
+
+      gift.classList.remove('opening');
+
+      status.textContent =
+        '🎊 BÍ MẬT ĐÃ ĐƯỢC BẬT MÍ!';
+
+      // HIỂN THỊ PHẦN THƯỞNG
+      document.getElementById('prizeIcon').textContent =
+        prize.icon;
+
+      document.getElementById('prizeName').textContent =
+        prize.name;
+
+      document.getElementById('prizeMessage').textContent =
+        prize.message;
+
+      btn.style.display = 'none';
+
+      result.classList.add('show');
+
+      confetti();
+
+      document.getElementById('footnote').textContent =
+        'Cảm ơn bạn đã tham gia!';
+
+    }, 3000);
+
+  });
+
+  // CHƠI LẠI
+  document.getElementById('again').addEventListener('click', () => {
+
+    busy = false;
+
+    root.classList.remove('opened');
+
+    gift.classList.remove('opening');
+
+    gift.classList.add('shaking');
+
+    result.classList.remove('show');
+
+    btn.disabled = false;
+
+    btn.style.display = 'inline-block';
+
+    status.textContent =
+      '🎁 Bạn đã sẵn sàng chưa?';
+
+    document.getElementById('footnote').textContent =
+      'Bạn sẽ nhận được một trong những phần quà bất ngờ!';
+
+  });
+
+})();
+</script>
+
+</body>
+</html>
