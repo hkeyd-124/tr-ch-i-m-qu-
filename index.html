@@ -446,32 +446,11 @@ h1 {
 
   // DANH SÁCH PHẦN THƯỞNG
   const prizes = [
-
-    {
-      icon: '⭕',
-      name: '1 CÁI NỊT',
-      message: 'Ôi! Một phần quà vô cùng thiết thực! 😂'
-    },
-
-    {
-      icon: '⭐',
-      name: '1 NGÔI SAO',
-      message: 'Bạn chính là ngôi sao may mắn hôm nay! 🌟'
-    },
-
-    {
-      icon: '🍀',
-      name: 'MAY MẮN LẦN SAU',
-      message: 'Đừng buồn nhé! Vận may sẽ đến vào lần tới!'
-    },
-
-    {
-      icon: '📱',
-      name: 'IPHONE 18 PRO MAX',
-      message: 'SIÊU PHẨM! Bạn là người may mắn nhất hôm nay!!! 🎉'
-    }
-
-  ];
+  { icon: '⭕', name: '1 CÁI NỊT', message: 'Ôi! Một phần quà vô cùng thiết thực! 😂', weight: 60 },
+  { icon: '⭐', name: '1 NGÔI SAO', message: 'Bạn chính là ngôi sao may mắn hôm nay! 🌟', weight: 10 },
+  { icon: '🍀', name: 'MAY MẮN LẦN SAU', message: 'Đừng buồn nhé! Vận may sẽ đến vào lần tới!', weight: 29 },
+  { icon: '📱', name: 'IPHONE 18 PRO MAX', message: 'SIÊU PHẨM! Bạn là người may mắn nhất hôm nay!!! 🎉', weight: 1 }
+];
 
   let busy = false;
 
@@ -549,8 +528,16 @@ h1 {
       clearInterval(timer);
 
       // CHỌN NGẪU NHIÊN PHẦN THƯỞNG
-      const prize =
-        prizes[Math.floor(Math.random() * prizes.length)];
+      const totalWeight = prizes.reduce(
+  (sum, prize) => sum + prize.weight, 0
+);
+
+let random = Math.random() * totalWeight;
+
+const prize = prizes.find(p => {
+  random -= p.weight;
+  return random < 0;
+});
 
       // HIỆU ỨNG MỞ NẮP
       root.classList.add('opened');
