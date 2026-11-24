@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hộp Quà Bí Ẩn</title>
+
 <style>
 * {
   box-sizing: border-box;
@@ -255,7 +256,18 @@ h1 {
   font-size: 14px;
   font-weight: 600;
   color: #e6dfff;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+}
+
+.counter {
+  margin: 0 0 20px;
+  padding: 9px 18px;
+  border-radius: 30px;
+  background: #ffffff12;
+  border: 1px solid #ffffff25;
+  color: #ffe39a;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .open-btn {
@@ -277,7 +289,7 @@ h1 {
 
 .open-btn:disabled {
   opacity: .55;
-  cursor: wait;
+  cursor: not-allowed;
 }
 
 .result {
@@ -334,7 +346,7 @@ h1 {
 .footnote {
   color: #aaa9c9;
   font-size: 12px;
-  margin-top: 28px;
+  margin-top: 25px;
 }
 
 .confetti {
@@ -365,6 +377,7 @@ h1 {
 <body>
 
 <div id="gift-app">
+
   <div class="stars"></div>
 
   <div class="content">
@@ -384,11 +397,8 @@ h1 {
       <div class="gift shaking" id="gift">
 
         <div class="gift-body"></div>
-
         <div class="ribbon-v"></div>
-
         <div class="gift-lid"></div>
-
         <div class="ribbon-h"></div>
 
         <div class="bow">
@@ -396,10 +406,15 @@ h1 {
         </div>
 
       </div>
+
     </div>
 
     <div id="status">
       🎁 Bạn đã sẵn sàng chưa?
+    </div>
+
+    <div class="counter" id="attemptCounter">
+      Số lượt đã mở: 0/5
     </div>
 
     <button class="open-btn" id="openGift">
@@ -435,26 +450,132 @@ h1 {
 (() => {
 
   const root = document.getElementById('gift-app');
-
   const gift = document.getElementById('gift');
-
   const btn = document.getElementById('openGift');
-
   const status = document.getElementById('status');
-
   const result = document.getElementById('result');
+  const counter = document.getElementById('attemptCounter');
 
-  // DANH SÁCH PHẦN THƯỞNG
-  const prizes = [
-  { icon: '⭕', name: '1 CÁI NỊT', message: 'Ôi! Một phần quà vô cùng thiết thực! 😂', weight: 60 },
-  { icon: '⭐', name: '1 NGÔI SAO', message: 'Bạn chính là ngôi sao may mắn hôm nay! 🌟', weight: 10 },
-  { icon: '🍀', name: 'MAY MẮN LẦN SAU', message: 'Đừng buồn nhé! Vận may sẽ đến vào lần tới!', weight: 29 },
-  { icon: '📱', name: 'IPHONE 18 PRO MAX', message: 'SIÊU PHẨM! Bạn là người may mắn nhất hôm nay!!! 🎉', weight: 1 }
-];
+  // =====================================
+  // 1. CẤU HÌNH SỐ LƯỢT MỞ
+  // =====================================
+
+  const MAX_ATTEMPTS = 5;
+
+  const STORAGE_KEY = 'mysteryGiftAttempts';
+
+  let attempts = Number(
+    localStorage.getItem(STORAGE_KEY) || 0
+  );
+
+  // Kiểm tra dữ liệu lượt mở
+  if (
+    !Number.isInteger(attempts) ||
+    attempts < 0 ||
+    attempts > MAX_ATTEMPTS
+  ) {
+    attempts = 0;
+    localStorage.setItem(STORAGE_KEY, attempts);
+  }
 
   let busy = false;
+  let timer = null;
 
-  // HIỆU ỨNG PHÁO GIẤY
+  // =====================================
+  // 2. CẤU HÌNH PHẦN THƯỞNG
+  // =====================================
+
+  const prizes = [
+
+    {
+      icon: '⭕',
+      name: '1 CÁI NỊT',
+      message: 'Ôi! Một phần quà vô cùng thiết thực! 😂',
+      weight: 70
+    },
+
+    {
+      icon: '⭐',
+      name: '1 NGÔI SAO',
+      message: 'Bạn chính là ngôi sao may mắn hôm nay! 🌟',
+      weight: 27
+    },
+    
+    {
+      icon: '🧩',
+      name: 'MẢNH GHÉP',
+      message: 'SIÊU PHẨM! Bạn là người may mắn nhất hôm nay!!! 🎉',
+      weight: 3
+    }
+
+  ];
+
+  // =====================================
+  // 3. CẬP NHẬT LƯỢT MỞ
+  // =====================================
+
+  function updateAttempts() {
+
+    counter.textContent =
+      `Số lượt đã mở: ${attempts}/${MAX_ATTEMPTS}`;
+
+    if (attempts >= MAX_ATTEMPTS) {
+
+      btn.disabled = true;
+
+      btn.textContent = 'ĐÃ HẾT LƯỢT 🎁';
+
+      status.textContent =
+        'Bạn đã sử dụng hết 5 lượt mở quà!';
+
+      document.getElementById('footnote').textContent =
+        'Cảm ơn bạn đã tham gia! ❤️';
+
+      document.getElementById('again').style.display =
+        'none';
+
+    } else {
+
+      btn.disabled = busy;
+
+      document.getElementById('again').style.display =
+        'inline-block';
+
+    }
+
+  }
+
+  // =====================================
+  // 4. RANDOM PHẦN THƯỞNG THEO TỶ LỆ
+  // =====================================
+
+  function randomPrize() {
+
+    const totalWeight = prizes.reduce(
+      (sum, prize) => sum + prize.weight,
+      0
+    );
+
+    let random = Math.random() * totalWeight;
+
+    for (const prize of prizes) {
+
+      random -= prize.weight;
+
+      if (random < 0) {
+        return prize;
+      }
+
+    }
+
+    return prizes[prizes.length - 1];
+
+  }
+
+  // =====================================
+  // 5. HIỆU ỨNG PHÁO GIẤY
+  // =====================================
+
   function confetti() {
 
     const colors = [
@@ -462,7 +583,7 @@ h1 {
       '#ff6b91',
       '#a994ff',
       '#75e4db',
-      '#fff'
+      '#ffffff'
     ];
 
     for (let i = 0; i < 75; i++) {
@@ -471,9 +592,11 @@ h1 {
 
       el.className = 'confetti';
 
-      el.style.left = Math.random() * 100 + '%';
+      el.style.left =
+        Math.random() * 100 + '%';
 
-      el.style.background = colors[i % colors.length];
+      el.style.background =
+        colors[i % colors.length];
 
       el.style.setProperty(
         '--drift',
@@ -481,25 +604,31 @@ h1 {
       );
 
       el.style.animationDelay =
-        (Math.random() * .9) + 's';
+        Math.random() * .9 + 's';
 
       root.appendChild(el);
 
       setTimeout(() => el.remove(), 4000);
+
     }
+
   }
 
-  // MỞ HỘP QUÀ
+  // =====================================
+  // 6. MỞ HỘP QUÀ
+  // =====================================
+
   btn.addEventListener('click', () => {
 
-    if (busy) return;
+    if (busy || attempts >= MAX_ATTEMPTS) {
+      return;
+    }
 
     busy = true;
 
     btn.disabled = true;
 
     gift.classList.remove('shaking');
-
     gift.classList.add('opening');
 
     status.textContent =
@@ -514,7 +643,7 @@ h1 {
 
     let ticks = 0;
 
-    const timer = setInterval(() => {
+    timer = setInterval(() => {
 
       status.textContent =
         messages[Math.min(ticks, messages.length - 1)];
@@ -527,19 +656,18 @@ h1 {
 
       clearInterval(timer);
 
-      // CHỌN NGẪU NHIÊN PHẦN THƯỞNG
-      const totalWeight = prizes.reduce(
-  (sum, prize) => sum + prize.weight, 0
-);
+      // Chọn phần thưởng
+      const prize = randomPrize();
 
-let random = Math.random() * totalWeight;
+      // Tăng lượt sau khi đã xác định phần thưởng
+      attempts++;
 
-const prize = prizes.find(p => {
-  random -= p.weight;
-  return random < 0;
-});
+      localStorage.setItem(
+        STORAGE_KEY,
+        attempts
+      );
 
-      // HIỆU ỨNG MỞ NẮP
+      // Hiệu ứng mở nắp
       root.classList.add('opened');
 
       gift.classList.remove('opening');
@@ -547,7 +675,7 @@ const prize = prizes.find(p => {
       status.textContent =
         '🎊 BÍ MẬT ĐÃ ĐƯỢC BẬT MÍ!';
 
-      // HIỂN THỊ PHẦN THƯỞNG
+      // Hiển thị kết quả
       document.getElementById('prizeIcon').textContent =
         prize.icon;
 
@@ -557,43 +685,75 @@ const prize = prizes.find(p => {
       document.getElementById('prizeMessage').textContent =
         prize.message;
 
-      btn.style.display = 'none';
-
       result.classList.add('show');
 
       confetti();
 
-      document.getElementById('footnote').textContent =
-        'Cảm ơn bạn đã tham gia!';
+      busy = false;
+
+      updateAttempts();
+
+      // Ẩn nút mở trong lúc đang xem kết quả
+      btn.style.display = 'none';
 
     }, 3000);
 
   });
 
-  // CHƠI LẠI
-  document.getElementById('again').addEventListener('click', () => {
+  // =====================================
+  // 7. MỞ LẠI HỘP QUÀ
+  // =====================================
 
-    busy = false;
+  document.getElementById('again').addEventListener(
+    'click',
+    () => {
 
-    root.classList.remove('opened');
+      if (attempts >= MAX_ATTEMPTS) {
+        updateAttempts();
+        return;
+      }
 
-    gift.classList.remove('opening');
+      root.classList.remove('opened');
 
-    gift.classList.add('shaking');
+      gift.classList.remove('opening');
+      gift.classList.add('shaking');
 
-    result.classList.remove('show');
+      result.classList.remove('show');
 
-    btn.disabled = false;
+      btn.style.display = 'inline-block';
 
-    btn.style.display = 'inline-block';
+      btn.disabled = false;
+
+      status.textContent =
+        '🎁 Bạn đã sẵn sàng chưa?';
+
+      document.getElementById('footnote').textContent =
+        'Hãy thử vận may của bạn!';
+
+      updateAttempts();
+
+    }
+  );
+
+  // =====================================
+  // 8. KHỞI TẠO KHI TẢI TRANG
+  // =====================================
+
+  updateAttempts();
+
+  if (attempts >= MAX_ATTEMPTS) {
+
+    btn.style.display = 'none';
+
+    document.getElementById('again').style.display =
+      'none';
+
+    gift.classList.remove('shaking');
 
     status.textContent =
-      '🎁 Bạn đã sẵn sàng chưa?';
+      'Bạn đã sử dụng hết 5 lượt mở quà!';
 
-    document.getElementById('footnote').textContent =
-      'Bạn sẽ nhận được một trong những phần quà bất ngờ!';
-
-  });
+  }
 
 })();
 </script>
