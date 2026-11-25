@@ -210,7 +210,29 @@ h1 {
 .gift.shaking {
   animation: giftshake .55s infinite;
 }
+.code-box {
+    position: relative;
+}
 
+.close-code {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.close-code:hover {
+    background: rgba(255,255,255,0.25);
+    transform: rotate(90deg);
+}
 @keyframes giftshake {
   0%,100% {
     transform: rotate(0) translateY(0);
@@ -550,7 +572,9 @@ h1 {
   <div class="code-overlay" id="codeOverlay">
 
     <div class="code-box">
-
+<button type="button" class="close-code" id="closeCode">
+    ✕
+</button>
       <div class="code-icon">🔐</div>
 
       <div class="code-title">
@@ -594,7 +618,10 @@ h1 {
 
 <script>
 (() => {
-
+  const closeCode = document.getElementById('closeCode');
+  
+  const codeOverlay = document.getElementById('codeOverlay');
+  
   const root = document.getElementById('gift-app');
 
   const gift = document.getElementById('gift');
@@ -1009,6 +1036,11 @@ h1 {
   }
 
 })();
+  
+  closeCode.addEventListener('click', () => {
+    codeOverlay.classList.remove('show');
+});
+  
 </script>
 
 </body>
