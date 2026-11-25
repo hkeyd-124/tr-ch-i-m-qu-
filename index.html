@@ -233,6 +233,26 @@ h1 {
     background: rgba(255,255,255,0.25);
     transform: rotate(90deg);
 }
+
+.code-reopen-btn {
+  margin-top: 16px;
+  padding: 13px 22px;
+  border: 1px solid #c6b8ff88;
+  border-radius: 30px;
+  background: #ffffff12;
+  color: #e8ddff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.code-reopen-btn:hover {
+  background: #ffffff25;
+  transform: translateY(-2px);
+}
+
 @keyframes giftshake {
   0%,100% {
     transform: rotate(0) translateY(0);
@@ -544,6 +564,10 @@ h1 {
       MỞ QUÀ ✨
     </button>
 
+    <button class="code-reopen-btn" id="reopenCode" type="button" style="display:none">
+      NHẬP MÃ MỞ THÊM LƯỢT 🔐
+    </button>
+
     <div class="result" id="result">
 
       <div style="font-size:12px;letter-spacing:2px;font-weight:bold;color:#ffe0a0">
@@ -634,8 +658,6 @@ h1 {
 
   const counter = document.getElementById('attemptCounter');
 
-  const codeOverlay = document.getElementById('codeOverlay');
-
   const codeInput = document.getElementById('codeInput');
 
   const codeMessage = document.getElementById('codeMessage');
@@ -721,6 +743,7 @@ h1 {
       document.getElementById('footnote').textContent =
         'Nhập mã mở rộng để tiếp tục nhé!';
 
+      document.getElementById('reopenCode').style.display = 'none';
       showCodeModal();
 
     } else {
@@ -996,6 +1019,7 @@ h1 {
       btn.disabled = false;
 
       btn.textContent = 'MỞ QUÀ ✨';
+      document.getElementById('reopenCode').style.display = 'none';
 
       status.textContent =
         '🎉 Bạn đã nhận thêm 5 lượt mở quà!';
@@ -1019,7 +1043,27 @@ h1 {
   });
 
   // =====================================
-  // 10. KHỞI TẠO KHI TẢI TRANG
+  // 10. ĐÓNG / MỞ LẠI HỘP THOẠI NHẬP CODE
+  // =====================================
+
+  closeCode.addEventListener('click', () => {
+    // Chỉ đóng giao diện, không khôi phục lượt mở.
+    codeOverlay.classList.remove('show');
+
+    if (attempts >= MAX_ATTEMPTS) {
+      document.getElementById('reopenCode').style.display = 'inline-block';
+    }
+  });
+
+  document.getElementById('reopenCode').addEventListener('click', () => {
+    if (attempts >= MAX_ATTEMPTS) {
+      showCodeModal();
+      document.getElementById('reopenCode').style.display = 'none';
+    }
+  });
+
+  // =====================================
+  // 11. KHỞI TẠO KHI TẢI TRANG
   // =====================================
 
   updateAttempts();
@@ -1036,11 +1080,8 @@ h1 {
   }
 
 })();
-  
-  closeCode.addEventListener('click', () => {
-    codeOverlay.classList.remove('show');
-});
-  
+
+
 </script>
 
 </body>
