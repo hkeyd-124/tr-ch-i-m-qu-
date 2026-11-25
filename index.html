@@ -349,6 +349,8 @@ h1 {
   margin-top: 25px;
 }
 
+/* PHÁO GIẤY */
+
 .confetti {
   position: absolute;
   top: -15px;
@@ -363,6 +365,107 @@ h1 {
     transform: translate(var(--drift),620px) rotate(800deg);
     opacity: 0;
   }
+}
+
+/* HỘP THOẠI NHẬP CODE */
+
+.code-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #080817d9;
+  backdrop-filter: blur(8px);
+}
+
+.code-overlay.show {
+  display: flex;
+  animation: fadeIn .35s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.code-box {
+  width: 100%;
+  max-width: 350px;
+  padding: 28px 22px;
+  border: 1px solid #8f7bda66;
+  border-radius: 20px;
+  background: linear-gradient(145deg,#302958,#17152f);
+  box-shadow: 0 15px 60px #0009;
+  animation: resultin .45s ease both;
+}
+
+.code-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.code-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #ffe39a;
+}
+
+.code-description {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #d0c8ec;
+  margin: 12px 0 20px;
+}
+
+.code-input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #8e80bb;
+  background: #100f25;
+  color: white;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  outline: none;
+  text-transform: uppercase;
+}
+
+.code-input:focus {
+  border-color: #ffcf68;
+  box-shadow: 0 0 12px #ffcf6840;
+}
+
+.code-submit {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(110deg,#ffcf68,#ff9f43);
+  color: #47220b;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.code-message {
+  min-height: 22px;
+  margin-top: 13px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #ff8a9d;
+}
+
+.code-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #aaa2ca;
 }
 
 @media(max-width:480px) {
@@ -395,7 +498,6 @@ h1 {
       <div class="glow"></div>
 
       <div class="gift shaking" id="gift">
-
         <div class="gift-body"></div>
         <div class="ribbon-v"></div>
         <div class="gift-lid"></div>
@@ -404,7 +506,6 @@ h1 {
         <div class="bow">
           <i></i>
         </div>
-
       </div>
 
     </div>
@@ -444,31 +545,90 @@ h1 {
     </div>
 
   </div>
+
+  <!-- HỘP THOẠI NHẬP CODE -->
+  <div class="code-overlay" id="codeOverlay">
+
+    <div class="code-box">
+
+      <div class="code-icon">🔐</div>
+
+      <div class="code-title">
+        ĐÃ HẾT LƯỢT MỞ!
+      </div>
+
+      <div class="code-description">
+        Bạn đã sử dụng hết 5 lượt mở quà.<br>
+        Nhập mã mở rộng để nhận thêm 5 lượt nhé!
+      </div>
+
+      <form id="codeForm">
+
+        <input
+          type="text"
+          id="codeInput"
+          class="code-input"
+          placeholder="NHẬP MÃ CODE"
+          autocomplete="off"
+          spellcheck="false"
+          maxlength="30"
+        >
+
+        <button type="submit" class="code-submit">
+          XÁC NHẬN MÃ 🎁
+        </button>
+
+      </form>
+
+      <div class="code-message" id="codeMessage"></div>
+
+      <div class="code-hint">
+        Hãy nhập mã được cung cấp để tiếp tục
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
 <script>
 (() => {
 
   const root = document.getElementById('gift-app');
+
   const gift = document.getElementById('gift');
+
   const btn = document.getElementById('openGift');
+
   const status = document.getElementById('status');
+
   const result = document.getElementById('result');
+
   const counter = document.getElementById('attemptCounter');
 
+  const codeOverlay = document.getElementById('codeOverlay');
+
+  const codeInput = document.getElementById('codeInput');
+
+  const codeMessage = document.getElementById('codeMessage');
+
+  const codeForm = document.getElementById('codeForm');
+
   // =====================================
-  // 1. CẤU HÌNH SỐ LƯỢT MỞ
+  // 1. CẤU HÌNH LƯỢT MỞ VÀ MÃ CODE
   // =====================================
 
   const MAX_ATTEMPTS = 5;
 
   const STORAGE_KEY = 'mysteryGiftAttempts';
 
+  const REDEEM_CODE = 'THEMLUOT';
+
   let attempts = Number(
     localStorage.getItem(STORAGE_KEY) || 0
   );
 
-  // Kiểm tra dữ liệu lượt mở
   if (
     !Number.isInteger(attempts) ||
     attempts < 0 ||
@@ -480,9 +640,10 @@ h1 {
 
   let busy = false;
   let timer = null;
+  let openingTimeout = null;
 
   // =====================================
-  // 2. CẤU HÌNH PHẦN THƯỞNG
+  // 2. DANH SÁCH PHẦN THƯỞNG
   // =====================================
 
   const prizes = [
@@ -491,27 +652,34 @@ h1 {
       icon: '⭕',
       name: '1 CÁI NỊT',
       message: 'Ôi! Một phần quà vô cùng thiết thực! 😂',
-      weight: 80
+      weight: 50
     },
 
     {
       icon: '⭐',
       name: '1 NGÔI SAO',
       message: 'Bạn chính là ngôi sao may mắn hôm nay! 🌟',
-      weight: 17
+      weight: 30
     },
-    
+
     {
-      icon: '🧩',
-      name: 'MẢNH GHÉP',
+      icon: '🍀',
+      name: 'MAY MẮN LẦN SAU',
+      message: 'Đừng buồn nhé! Vận may sẽ đến vào lần tới!',
+      weight: 19
+    },
+
+    {
+      icon: '📱',
+      name: 'IPHONE 18 PRO MAX',
       message: 'SIÊU PHẨM! Bạn là người may mắn nhất hôm nay!!! 🎉',
-      weight: 3
+      weight: 1
     }
 
   ];
 
   // =====================================
-  // 3. CẬP NHẬT LƯỢT MỞ
+  // 3. CẬP NHẬT TRẠNG THÁI LƯỢT
   // =====================================
 
   function updateAttempts() {
@@ -522,17 +690,18 @@ h1 {
     if (attempts >= MAX_ATTEMPTS) {
 
       btn.disabled = true;
-
       btn.textContent = 'ĐÃ HẾT LƯỢT 🎁';
 
       status.textContent =
         'Bạn đã sử dụng hết 5 lượt mở quà!';
 
-      document.getElementById('footnote').textContent =
-        'Cảm ơn bạn đã tham gia! ❤️';
-
       document.getElementById('again').style.display =
         'none';
+
+      document.getElementById('footnote').textContent =
+        'Nhập mã mở rộng để tiếp tục nhé!';
+
+      showCodeModal();
 
     } else {
 
@@ -546,7 +715,27 @@ h1 {
   }
 
   // =====================================
-  // 4. RANDOM PHẦN THƯỞNG THEO TỶ LỆ
+  // 4. HIỆN HỘP THOẠI NHẬP CODE
+  // =====================================
+
+  function showCodeModal() {
+
+    if (attempts < MAX_ATTEMPTS) return;
+
+    codeOverlay.classList.add('show');
+
+    codeMessage.textContent = '';
+
+    codeInput.value = '';
+
+    setTimeout(() => {
+      codeInput.focus();
+    }, 100);
+
+  }
+
+  // =====================================
+  // 5. RANDOM PHẦN THƯỞNG THEO TỶ LỆ
   // =====================================
 
   function randomPrize() {
@@ -573,7 +762,7 @@ h1 {
   }
 
   // =====================================
-  // 5. HIỆU ỨNG PHÁO GIẤY
+  // 6. HIỆU ỨNG PHÁO GIẤY
   // =====================================
 
   function confetti() {
@@ -615,12 +804,15 @@ h1 {
   }
 
   // =====================================
-  // 6. MỞ HỘP QUÀ
+  // 7. MỞ HỘP QUÀ
   // =====================================
 
   btn.addEventListener('click', () => {
 
-    if (busy || attempts >= MAX_ATTEMPTS) {
+    if (
+      busy ||
+      attempts >= MAX_ATTEMPTS
+    ) {
       return;
     }
 
@@ -629,6 +821,7 @@ h1 {
     btn.disabled = true;
 
     gift.classList.remove('shaking');
+
     gift.classList.add('opening');
 
     status.textContent =
@@ -652,14 +845,14 @@ h1 {
 
     }, 650);
 
-    setTimeout(() => {
+    openingTimeout = setTimeout(() => {
 
       clearInterval(timer);
 
       // Chọn phần thưởng
       const prize = randomPrize();
 
-      // Tăng lượt sau khi đã xác định phần thưởng
+      // Ghi nhận một lượt mở
       attempts++;
 
       localStorage.setItem(
@@ -667,7 +860,7 @@ h1 {
         attempts
       );
 
-      // Hiệu ứng mở nắp
+      // Mở nắp hộp
       root.classList.add('opened');
 
       gift.classList.remove('opening');
@@ -675,7 +868,7 @@ h1 {
       status.textContent =
         '🎊 BÍ MẬT ĐÃ ĐƯỢC BẬT MÍ!';
 
-      // Hiển thị kết quả
+      // Hiển thị phần thưởng
       document.getElementById('prizeIcon').textContent =
         prize.icon;
 
@@ -691,31 +884,34 @@ h1 {
 
       busy = false;
 
-      updateAttempts();
-
-      // Ẩn nút mở trong lúc đang xem kết quả
       btn.style.display = 'none';
+
+      // Cập nhật lượt và kiểm tra hết lượt
+      updateAttempts();
 
     }, 3000);
 
   });
 
   // =====================================
-  // 7. MỞ LẠI HỘP QUÀ
+  // 8. MỞ LẠI HỘP QUÀ
   // =====================================
 
   document.getElementById('again').addEventListener(
     'click',
     () => {
 
-      if (attempts >= MAX_ATTEMPTS) {
-        updateAttempts();
+      if (
+        busy ||
+        attempts >= MAX_ATTEMPTS
+      ) {
         return;
       }
 
       root.classList.remove('opened');
 
       gift.classList.remove('opening');
+
       gift.classList.add('shaking');
 
       result.classList.remove('show');
@@ -736,7 +932,74 @@ h1 {
   );
 
   // =====================================
-  // 8. KHỞI TẠO KHI TẢI TRANG
+  // 9. KIỂM TRA VÀ NHẬN CODE
+  // =====================================
+
+  codeForm.addEventListener('submit', (event) => {
+
+    event.preventDefault();
+
+    // Chỉ cho phép nhập code khi đã hết lượt
+    if (attempts < MAX_ATTEMPTS) {
+      return;
+    }
+
+    const enteredCode =
+      codeInput.value.trim().toUpperCase();
+
+    if (enteredCode === REDEEM_CODE) {
+
+      // Cấp lại 5 lượt
+      attempts = 0;
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        attempts
+      );
+
+      // Đóng hộp thoại
+      codeOverlay.classList.remove('show');
+
+      codeMessage.textContent = '';
+
+      // Đưa hộp quà về trạng thái ban đầu
+      root.classList.remove('opened');
+
+      gift.classList.remove('opening');
+
+      gift.classList.add('shaking');
+
+      result.classList.remove('show');
+
+      btn.style.display = 'inline-block';
+
+      btn.disabled = false;
+
+      btn.textContent = 'MỞ QUÀ ✨';
+
+      status.textContent =
+        '🎉 Bạn đã nhận thêm 5 lượt mở quà!';
+
+      document.getElementById('footnote').textContent =
+        'Chúc bạn tiếp tục gặp may mắn!';
+
+      updateAttempts();
+
+    } else {
+
+      codeMessage.textContent =
+        '❌ Mã không chính xác! Vui lòng thử lại.';
+
+      codeInput.value = '';
+
+      codeInput.focus();
+
+    }
+
+  });
+
+  // =====================================
+  // 10. KHỞI TẠO KHI TẢI TRANG
   // =====================================
 
   updateAttempts();
@@ -744,9 +1007,6 @@ h1 {
   if (attempts >= MAX_ATTEMPTS) {
 
     btn.style.display = 'none';
-
-    document.getElementById('again').style.display =
-      'none';
 
     gift.classList.remove('shaking');
 
